@@ -2,6 +2,16 @@
 
 Projeto para gerar uma ISO customizada do Debian com instalacao automatizada via preseed e arquivos de configuracao Blue3 embutidos.
 
+## 🔄 Antes de comecar: `git pull`
+
+**SEMPRE** verifique atualizacoes remotas antes de escrever ou alterar qualquer coisa neste repositorio:
+
+```bash
+git pull          # ja esta pre-autorizado (allow)
+```
+
+Trabalhar sobre uma base desatualizada gera conflitos. Puxe primeiro, sempre. Para so inspecionar antes: `git fetch && git status`.
+
 ## Objetivo
 
 Este diretorio guarda o material versionavel necessario para reconstruir a ISO:
