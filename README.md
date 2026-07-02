@@ -1,61 +1,61 @@
 # Blue3 Debian ISO Custom
 
-Projeto para gerar uma ISO customizada do Debian com instalacao automatizada via preseed e arquivos de configuracao Blue3 embutidos.
+Project to generate a customized Debian ISO with automated installation via preseed and embedded Blue3 configuration files.
 
-## 🔄 Antes de comecar: `git pull`
+## 🔄 Before you start: `git pull`
 
-**SEMPRE** verifique atualizacoes remotas antes de escrever ou alterar qualquer coisa neste repositorio:
+**ALWAYS** check for remote updates before writing or changing anything in this repository:
 
 ```bash
-git pull          # ja esta pre-autorizado (allow)
+git pull          # already pre-authorized (allow)
 ```
 
-Trabalhar sobre uma base desatualizada gera conflitos. Puxe primeiro, sempre. Para so inspecionar antes: `git fetch && git status`.
+Working on top of an outdated base causes conflicts. Pull first, always. To just inspect beforehand: `git fetch && git status`.
 
-## Objetivo
+## Goal
 
-Este diretorio guarda o material versionavel necessario para reconstruir a ISO:
+This directory holds the versionable material needed to rebuild the ISO:
 
-- `script-iso.sh`: extrai a ISO base, injeta os arquivos Blue3, ajusta o boot e gera a nova ISO
-- `blue3/preseed.cfg`: define a instalacao automatica
-- `blue3/`: arquivos que entram na ISO em `/blue3` e sao aplicados no sistema instalado no `late_command`
+- `script-iso.sh`: extracts the base ISO, injects the Blue3 files, adjusts the boot and generates the new ISO
+- `blue3/preseed.cfg`: defines the automatic installation
+- `blue3/`: files that go into the ISO under `/blue3` and are applied to the installed system in the `late_command`
 
-Artefatos de build, como `isofiles/`, `*.iso` e `custom.log`, ficam fora do versionamento pelo `.gitignore`.
+Build artifacts, such as `isofiles/`, `*.iso` and `custom.log`, are kept out of versioning by the `.gitignore`.
 
-## Padrao de Automacao
+## Automation Standard
 
-Para deixar o processo o mais automatizavel possivel, a ISO base deve ficar neste diretorio com nome fixo:
+To make the process as automatable as possible, the base ISO must sit in this directory with a fixed name:
 
 ```text
 debian.iso
 ```
 
-Isso evita editar o script a cada nova imagem. Pode ser uma ISO netinst, DVD ou outra variante do Debian, desde que seja renomeada para `debian.iso` antes do build.
+This avoids editing the script for each new image. It can be a netinst ISO, a DVD or another Debian variant, as long as it is renamed to `debian.iso` before the build.
 
-O script tambem valida essa ISO logo no inicio. Se `debian.iso` nao existir, ele aborta antes da limpeza com mensagem clara no terminal e no `custom.log`.
+The script also validates this ISO right at the start. If `debian.iso` does not exist, it aborts before the cleanup with a clear message in the terminal and in `custom.log`.
 
-## Arquico blue3_script.sh
+## The blue3_script.sh file
 
-Arquivo README_blue3_script.md para entender o funcionamento do /root/blue3_script.sh
+See the README_blue3_script.md file to understand how /root/blue3_script.sh works.
 
-## Variaveis de Ajuste Rapido
+## Quick-Adjustment Variables
 
-Para evitar sair procurando pontos sensiveis no script, os ajustes de usuario e grupo ficam concentrados no inicio:
+To avoid hunting for sensitive spots in the script, the user and group adjustments are concentrated at the start:
 
 ```bash
 BUILD_USER="${BUILD_USER:-$USER}"
 BUILD_GROUP="${BUILD_GROUP:-$USER}"
 ```
 
-Essas variaveis controlam os `chown` aplicados em `isofiles/`, `blue3/` e na ISO final gerada.
+These variables control the `chown` applied to `isofiles/`, `blue3/` and the final generated ISO.
 
-Se outro usuario for utilizar o build, basta ajustar essas variaveis no inicio do script ou chamar assim:
+If another user is going to use the build, just adjust these variables at the start of the script or call it like this:
 
 ```bash
 BUILD_USER=outro_usuario BUILD_GROUP=outro_grupo bash script-iso.sh
 ```
 
-## Estrutura do Projeto
+## Project Structure
 
 ```text
 .
@@ -84,46 +84,46 @@ BUILD_USER=outro_usuario BUILD_GROUP=outro_grupo bash script-iso.sh
 └── isofiles/
 ```
 
-## Como o Build Funciona
+## How the Build Works
 
-O fluxo atual e este:
+The current flow is this:
 
-1. O `script-iso.sh` valida se `debian.iso` existe.
-2. O script remove `isofiles/` e a ISO de saida anterior do dia.
-3. A ISO base `debian.iso` e extraida para `isofiles/`.
-4. O conteudo da pasta `blue3/` e copiado para `isofiles/blue3/`.
-5. O script valida a existencia de `isofiles/blue3/preseed.cfg`.
-6. O `initrd` do instalador e reempacotado sem os componentes de `speakup` e acessibilidade.
-7. Os menus de boot BIOS e UEFI recebem os parametros para instalacao automatica usando `preseed/file=/cdrom/blue3/preseed.cfg`.
-8. O `md5sum.txt` da ISO extraida e recriado.
-9. A nova ISO e gerada com nome no formato `blue3-debian-YYYYMMDD.iso`.
+1. `script-iso.sh` validates that `debian.iso` exists.
+2. The script removes `isofiles/` and the previous output ISO for the day.
+3. The base ISO `debian.iso` is extracted to `isofiles/`.
+4. The contents of the `blue3/` folder are copied to `isofiles/blue3/`.
+5. The script validates the existence of `isofiles/blue3/preseed.cfg`.
+6. The installer's `initrd` is repackaged without the `speakup` and accessibility components.
+7. The BIOS and UEFI boot menus receive the parameters for automatic installation using `preseed/file=/cdrom/blue3/preseed.cfg`.
+8. The extracted ISO's `md5sum.txt` is recreated.
+9. The new ISO is generated with a name in the format `blue3-debian-YYYYMMDD.iso`.
 
-## O que o `script-iso.sh` monta
+## What `script-iso.sh` assembles
 
-### Entrada Esperada
+### Expected Input
 
-- ISO base: `debian.iso`
-- Diretorio de customizacao: `blue3/`
+- Base ISO: `debian.iso`
+- Customization directory: `blue3/`
 
-### Estrutura Gerada no Build
+### Structure Generated in the Build
 
-- `isofiles/`: arvore temporaria com a ISO extraida
-- `isofiles/blue3/`: copia dos arquivos locais de customizacao
-- `custom.log`: log do processo de build
-- `blue3-debian-YYYYMMDD.iso`: ISO final gerada
+- `isofiles/`: temporary tree with the extracted ISO
+- `isofiles/blue3/`: copy of the local customization files
+- `custom.log`: log of the build process
+- `blue3-debian-YYYYMMDD.iso`: final generated ISO
 
-### Alteracoes Feitas pelo Script
+### Changes Made by the Script
 
-- Valida a existencia de `debian.iso` antes de iniciar a limpeza
-- Extrai a ISO original com `xorriso`
-- Ajusta dono e permissoes dos arquivos copiados para a pasta `blue3` interna
-- Garante permissao executavel para `10-uname` e `20-blue3`
-- Remove `speakup` e arquivos relacionados de `install.amd/initrd.gz` e `install.amd/gtk/initrd.gz`
-- Ajusta o boot do instalador para usar preseed automatico e desabilitar fala
-- Recalcula `md5sum.txt`
-- Gera a ISO final em modo hibrido BIOS/UEFI
+- Validates the existence of `debian.iso` before starting the cleanup
+- Extracts the original ISO with `xorriso`
+- Adjusts the owner and permissions of the files copied to the internal `blue3` folder
+- Ensures the executable permission for `10-uname` and `20-blue3`
+- Removes `speakup` and related files from `install.amd/initrd.gz` and `install.amd/gtk/initrd.gz`
+- Adjusts the installer's boot to use automatic preseed and disable speech
+- Recalculates `md5sum.txt`
+- Generates the final ISO in hybrid BIOS/UEFI mode
 
-### Parametros de Boot Injetados
+### Injected Boot Parameters
 
 ```text
 auto=true priority=critical preseed/file=/cdrom/blue3/preseed.cfg vga=788 \
@@ -131,140 +131,140 @@ debian-installer/speech=false speakup.synth=none speakup.synth=off \
 debian-installer/disable-speech=true noaccessibility DEBCONF_DEBUG=5
 ```
 
-## O Que o `blue3/preseed.cfg` Configura
+## What `blue3/preseed.cfg` Configures
 
-O `preseed.cfg` automatiza a instalacao e define o padrao do sistema instalado.
+The `preseed.cfg` automates the installation and defines the default of the installed system.
 
-### Instalador
+### Installer
 
-- Instalacao automatica com `debconf/priority=critical`
-- `preseed/interactive=false` para reduzir perguntas durante a instalacao
-- Fala e acessibilidade desabilitadas
+- Automatic installation with `debconf/priority=critical`
+- `preseed/interactive=false` to reduce questions during the installation
+- Speech and accessibility disabled
 - Locale `pt_BR.UTF-8`
-- Idioma `pt`
-- Teclado `us`
+- Language `pt`
+- Keyboard `us`
 
-### Rede
+### Network
 
-Durante a instalacao, a configuracao de rede automatica e bloqueada para nao interferir no processo.
+During the installation, automatic network configuration is blocked so as not to interfere with the process.
 
 - Hostname: `blue3`
-- Dominio: `b3.local`
-- IPv4: desabilitado
+- Domain: `b3.local`
+- IPv4: disabled
 - DNS: `170.233.231.231 170.233.231.232 1.1.1.1`
-- IPv6: desabilitado
-- É copiado um arquivo default do /etc/network/interfaces para facilitar seu preenchimento posterior.
+- IPv6: disabled
+- A default /etc/network/interfaces file is copied to make it easier to fill in later.
 
-### Mirror e Pacotes
+### Mirror and Packages
 
-- Mirror configurado: `mirror.blue3.com.br/debian`
-- `apt-setup/use_mirror` esta em `false`
-- Task selecionada: `standard`
-- Pacotes adicionais: `sudo`, `vim`, `openssh-server`, `zstd`, `xfsprogs`, `btrfs-progs`
+- Configured mirror: `mirror.blue3.com.br/debian`
+- `apt-setup/use_mirror` is `false`
+- Selected task: `standard`
+- Additional packages: `sudo`, `vim`, `openssh-server`, `zstd`, `xfsprogs`, `btrfs-progs`
 
-Para uso realmente offline, o ideal e usar uma ISO Debian que ja contenha os pacotes necessarios, tipicamente uma ISO DVD renomeada para `debian.iso`.
+For truly offline use, the ideal is to use a Debian ISO that already contains the necessary packages, typically a DVD ISO renamed to `debian.iso`.
 
-### Usuarios
+### Users
 
-- Nao cria usuario interativo durante o instalador
-- Define o usuario `root`
-- Define o usuario `samir` como usuario adicional sudo
-- As senhas ficam gravadas em hash dentro do preseed
-  - Podem ser alterada a senha default criando uma nova com o comando abaixo copiando todo o resultado e substituindo a partir do 'password'
+- Does not create an interactive user during the installer
+- Sets the `root` user
+- Sets the `samir` user as an additional sudo user
+- The passwords are stored hashed inside the preseed
+  - The default password can be changed by creating a new one with the command below, copying the entire result and replacing from 'password' onward
   ```text
   mkpasswd -m sha-512 "sua-senha-aqui"
   ```
 
-Observacao: os comentarios do arquivo indicam senha padrao `blue3`. Se isso for mantido fora de ambiente controlado, o ideal e trocar esse segredo antes de publicar ou usar em producao.
+Note: the file's comments indicate a default password of `blue3`. If this is kept outside a controlled environment, the ideal is to change this secret before publishing or using in production.
 
 
-### Fuso e Horario
+### Time Zone and Clock
 
 - Timezone: `America/Sao_Paulo`
 - NTP: `ntp.blue3.com.br`
 
-### Particionamento Automatico
+### Automatic Partitioning
 
-- Lembrando que a finalidade é um servidor sem ambiente gráfico, utilizando apenas o mínimo necessário em cada partição. O restante do espaço físico permanece livre no VG do LVM, podendo ser utilizado posteriormente para ajustes nas partições. O uso de /var, /log e /tmp em Btrfs permite aplicar compactação de arquivos.
-- A separação do diretório /var/log em uma partição dedicada tem como objetivo evitar que o crescimento excessivo de arquivos de log comprometa o funcionamento do sistema.
-- A separação do diretório /tmp permite aplicar diretamente no /etc/fstab opções de segurança, como restrições de execução e outras proteções.
+- Note that the purpose is a server without a graphical environment, using only the bare minimum in each partition. The remaining physical space stays free in the LVM VG and can be used later to adjust the partitions. Using /var, /log and /tmp on Btrfs allows file compression to be applied.
+- Separating the /var/log directory into a dedicated partition aims to prevent excessive log-file growth from compromising the system's operation.
+- Separating the /tmp directory allows security options — such as execution restrictions and other protections — to be applied directly in /etc/fstab.
 
-- Disco alvo: `/dev/sda`
+- Target disk: `/dev/sda`
 - Volume group: `vg0`
 - Layout:
-  - EFI em GPT para boot UEFI
-  - `/boot` em `ext4`
-  - `swap` em LVM
-  - `/` em LVM `xfs`
-  - `/var` em LVM `btrfs`
-  - `/var/log` em LVM `btrfs`
-  - `/tmp` em LVM `btrfs`
+  - EFI on GPT for UEFI boot
+  - `/boot` on `ext4`
+  - `swap` on LVM
+  - `/` on LVM `xfs`
+  - `/var` on LVM `btrfs`
+  - `/var/log` on LVM `btrfs`
+  - `/tmp` on LVM `btrfs`
 
-## Arquivos Blue3 Aplicados no `late_command`
+## Blue3 Files Applied in the `late_command`
 
-Ao final da instalacao, o `late_command` copia arquivos da ISO para o sistema instalado.
+At the end of the installation, the `late_command` copies files from the ISO to the installed system.
 
-| Origem na ISO | Destino no sistema instalado | Finalidade |
+| Source on the ISO | Destination on the installed system | Purpose |
 | --- | --- | --- |
-| `blue3/blue3_script.sh` | `/root/blue3_script.sh` | Script inicial para ajustes e configuracoes iniciais |
-| `blue3/.env` | `/root/.env` | Arquivo de configuração da API do PHPIPAM |
-| `blue3/.env.example`        | Arquivo de exemplo da configuração da API do PHPIPAM, configure conforme seu PHPIPAM |
-| `blue3/service.one_shot` | `/etc/systemd/system/blue3-firstboot.service` | Script inicial forçando no boot |
-| `blue3/20-blue3` | `/etc/update-motd.d/20-blue3` | MOTD dinamico da Blue3 |
-| `blue3/10-uname` | `/etc/update-motd.d/10-uname` | informacoes de sistema no login |
-| `blue3/issue.net` | `/etc/issue.net` | banner remoto |
-| `blue3/issue` | `/etc/issue` | banner local |
-| `blue3/motd` | `/etc/motd` | MOTD base |
-| `blue3/bashrc` | `/root/.bashrc` | ambiente do root |
-| `blue3/bashrc` | `/home/samir/.bashrc` | ambiente do usuario `samir` |
-| `blue3/ssh/sshd_config` | `/etc/ssh/sshd_config` | configuracao principal do SSH |
-| `blue3/ssh/ipauth.conf` | `/etc/ssh/sshd_config.d/ipauth.conf` | IPs que permitem o acesso direto com usuario root |
-| `blue3/ssh/keyregeneration.conf` | `/etc/ssh/sshd_config.d/keyregeneration.conf` | Lifetime e tamanho (verão 1) |
-| `blue3/ssh/rhosts.conf` | `/etc/ssh/sshd_config.d/rhosts.conf` | Configurações de permissões de hosts |
-| `blue3/ssh/useprivilegeseparation.conf` | `/etc/ssh/sshd_config.d/useprivilegeseparation.conf` | Separação de previlégios |
+| `blue3/blue3_script.sh` | `/root/blue3_script.sh` | Initial script for first-time adjustments and configuration |
+| `blue3/.env` | `/root/.env` | PHPIPAM API configuration file |
+| `blue3/.env.example`        | Example PHPIPAM API configuration file; configure it according to your PHPIPAM |
+| `blue3/service.one_shot` | `/etc/systemd/system/blue3-firstboot.service` | Initial script forced at boot |
+| `blue3/20-blue3` | `/etc/update-motd.d/20-blue3` | Dynamic Blue3 MOTD |
+| `blue3/10-uname` | `/etc/update-motd.d/10-uname` | system information at login |
+| `blue3/issue.net` | `/etc/issue.net` | remote banner |
+| `blue3/issue` | `/etc/issue` | local banner |
+| `blue3/motd` | `/etc/motd` | base MOTD |
+| `blue3/bashrc` | `/root/.bashrc` | root's environment |
+| `blue3/bashrc` | `/home/samir/.bashrc` | the `samir` user's environment |
+| `blue3/ssh/sshd_config` | `/etc/ssh/sshd_config` | main SSH configuration |
+| `blue3/ssh/ipauth.conf` | `/etc/ssh/sshd_config.d/ipauth.conf` | IPs that allow direct access with the root user |
+| `blue3/ssh/keyregeneration.conf` | `/etc/ssh/sshd_config.d/keyregeneration.conf` | Lifetime and size (version 1) |
+| `blue3/ssh/rhosts.conf` | `/etc/ssh/sshd_config.d/rhosts.conf` | Host permission settings |
+| `blue3/ssh/useprivilegeseparation.conf` | `/etc/ssh/sshd_config.d/useprivilegeseparation.conf` | Privilege separation |
 
-Acoes finais executadas:
+Final actions performed:
 
-- Cria diretorios necessarios em `/target`
-- Ajusta dono da home do usuario `samir`
-- Habilita o servico `ssh`
-- Tenta marcar os scripts de `update-motd.d` como executaveis
-- Copia `sources.list` personalizado para `/etc/apt/sources.list`
+- Creates the necessary directories in `/target`
+- Adjusts the owner of the `samir` user's home
+- Enables the `ssh` service
+- Tries to mark the `update-motd.d` scripts as executable
+- Copies a custom `sources.list` to `/etc/apt/sources.list`
 
-## Dependencias
+## Dependencies
 
-Pacotes esperados no host de build:
+Packages expected on the build host:
 
 ```bash
 sudo apt install xorriso isolinux syslinux-utils cpio gzip
 ```
 
-Tambem sao usados `md5sum`, `find`, `sed`, `xargs` e permissao `sudo` para limpeza e ajuste de ownership.
+`md5sum`, `find`, `sed`, `xargs` and `sudo` permission are also used for cleanup and ownership adjustment.
 
-## Como Gerar a ISO
+## How to Generate the ISO
 
-1. Coloque a ISO Debian de origem neste diretorio com o nome `debian.iso`.
-2. Confirme que `blue3/preseed.cfg` e os arquivos de `blue3/` estao atualizados.
-3. Execute:
+1. Place the source Debian ISO in this directory with the name `debian.iso`.
+2. Confirm that `blue3/preseed.cfg` and the files in `blue3/` are up to date.
+3. Run:
 
 ```bash
 cd /home/samir/Webs/b3files/www/files.b3.rs/blue3/debian_blue3_iso
 sudo bash script-iso.sh
 ```
 
-Saida esperada:
+Expected output:
 
-- ISO gerada em `blue3-debian-YYYYMMDD.iso`
-- Log salvo em `custom.log`
+- ISO generated at `blue3-debian-YYYYMMDD.iso`
+- Log saved to `custom.log`
 
-## Observacoes Importantes
+## Important Notes
 
-- O nome correto do script atual e `script-iso.sh`.
-- Os `chown` do processo usam as variaveis `BUILD_USER` e `BUILD_GROUP` definidas no inicio do script.
-- O caminho de boot correto do preseed e `/cdrom/blue3/preseed.cfg`.
-- O arquivo `blue3/grub.cfg` existe no projeto, mas o fluxo atual do script nao o copia diretamente para a ISO; o ajuste de boot e feito por `sed` sobre a ISO extraida.
-- O arquivo `blue3/blue3.png` existe no projeto, mas nao e manipulado diretamente pelo script atual.
-- Se a intencao for publicar isso fora de ambiente controlado, vale revisar IPs, senhas e regras de SSH antes de subir para um repositorio remoto.
-- O processo de instalação completo usando máquina virtual com 8 vCPU, 8 GB de RAM e 60 GB de SSD
-  - Windows Server 2022 - Hyper-V levou 3 minutos e 33 segundos
-  - Proxmox 9.1 levou 3 minutos e 10 segundos
+- The correct name of the current script is `script-iso.sh`.
+- The process's `chown` uses the `BUILD_USER` and `BUILD_GROUP` variables defined at the start of the script.
+- The correct preseed boot path is `/cdrom/blue3/preseed.cfg`.
+- The `blue3/grub.cfg` file exists in the project, but the current script flow does not copy it directly to the ISO; the boot adjustment is done via `sed` over the extracted ISO.
+- The `blue3/blue3.png` file exists in the project, but is not manipulated directly by the current script.
+- If the intention is to publish this outside a controlled environment, it is worth reviewing IPs, passwords and SSH rules before pushing to a remote repository.
+- The full installation process using a virtual machine with 8 vCPU, 8 GB of RAM and a 60 GB SSD
+  - Windows Server 2022 - Hyper-V took 3 minutes and 33 seconds
+  - Proxmox 9.1 took 3 minutes and 10 seconds
